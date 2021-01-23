@@ -25,6 +25,7 @@ public:
   
   bool isConnected();
   bool addConnection( Node * n );
+  bool removeConnection( Node * n );
   friend ostream &operator << (ostream &out, const Node &n);
 private:
   vector<Node*> connections;
@@ -39,20 +40,22 @@ void Node::setWall()
 ostream & operator << (ostream &out, const Node &n) 
 {
   //out << "Node: (" << n.x << "," << n.y << ")";
-  if( n.connections.size() > 0 )
+  if( n.connections.size() > 0 && (n.x>=0) && (n.y>=0) )
     {
       //out << "->" << endl;
       for( int i=0; i<n.connections.size(); i++ )
 	{
 	  // this would create an infinite recursive loop
 	  //out << "\t" << *n.connections[i] << endl;
-	  out << "<line"
-	      << " x1=\"" << n.x*30 << "\""
-	      << " y1=\"" << n.y*30 << "\""
- 	      << " x2=\"" << n.connections[i]->getX()*30 << "\""
-	      << " y2=\"" << n.connections[i]->getY()*30 << "\""
-	      << " stroke-width=\"2\" stroke=\"#000000\"/>";
-
+	  if( (n.connections[i]->getX()>=0) && (n.connections[i]->getY() >=0 ) )
+	    {
+	      out << "<line"
+		  << " x1=\"" << 5 + n.x*30  << "\""
+		  << " y1=\"" << 5 + n.y*30  << "\""
+		  << " x2=\"" << 5 + n.connections[i]->getX()*30  << "\""
+		  << " y2=\"" << 5 + n.connections[i]->getY()*30 << "\""
+		  << " stroke-width=\"2\" stroke=\"#000000\"/>";
+	    }
 	  //out << "\tNode: (" << n.connections[i]->getX() << "," << n.connections[i]->getY() << ")" << endl;
 	}
     }
@@ -90,6 +93,30 @@ Node::Node( int a, int b )
     wall=false;
   }
 
+bool Node::removeConnection(Node * n)
+{
+#ifdef DEBUG
+  cerr << "trying to remove connection " << endl;
+#endif
+  // Make sure we're not trying to remove a connection to ourself
+  if( n->getX() == x && n->getY() == y ) return false;
+
+  for( int i=0; i<connections.size(); i++ )
+    {
+      if( connections.at(i) == n )
+	{
+	  // found it in the connections list already
+	  connections.erase(connections.begin()+i-1);
+	  n->removeConnection(this);
+	  return true;
+	  // no need to keep looking so
+	  // break out of the loop
+	}
+    }
+  return false;
+
+
+}
 bool Node::addConnection( Node * n )
 {
 #ifdef DEBUG
@@ -240,13 +267,51 @@ int main()
       f->getNode(i,MAXSIZE-1)->addConnection( f->getNode(i+1,MAXSIZE-1) );
       
     }
-  for( int i=0; i<MAXSIZE-1; i++ )
+
+  int random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+  // North Border
+  f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
+  addRandomWall( f->getNode(random_part_of_a_wall,1), f );
+
+  
+  // West Border
+  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+  f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
+  addRandomWall( f->getNode(1,random_part_of_a_wall), f );
+
+  // TODO: Why do the Southern and Eastern Borders sometimes connect creating a non-maze?
+
+  // South Border
+  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+  f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
+  addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
+
+  // East Border
+  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+  f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
+  addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
+  
+ 
+
+  for( int i=0; i<MAXSIZE; i++ )
     {
-      for( int j=0; j<MAXSIZE-1; j++ )
+      for( int j=0; j<MAXSIZE; j++ )
 	{
 	  addRandomWall( f->getNode(i,j), f );
 	}
     }
+
+
+  
+  // Remove the top left and bottom right
+  // top left
+  f->getNode(0,0)->removeConnection( f->getNode(0,1) );
+  f->getNode(0,1)->removeConnection( f->getNode(0,0) );
+
+  // bottom right
+  f->getNode(MAXSIZE-1,MAXSIZE-2)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-1) );
+  f->getNode(MAXSIZE-1,MAXSIZE-1)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-2) );
+
   // addRandomWall( f->getNode(5,4), f );
 
   /* DISPLAY THE MAZE */
