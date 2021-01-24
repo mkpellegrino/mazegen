@@ -50,10 +50,10 @@ ostream & operator << (ostream &out, const Node &n)
 	  if( (n.connections[i]->getX()>=0) && (n.connections[i]->getY() >=0 ) )
 	    {
 	      out << "<line"
-		  << " x1=\"" << 5 + n.x*30  << "\""
-		  << " y1=\"" << 5 + n.y*30  << "\""
-		  << " x2=\"" << 5 + n.connections[i]->getX()*30  << "\""
-		  << " y2=\"" << 5 + n.connections[i]->getY()*30 << "\""
+		  << " x1=\"" << 10 + n.x*30  << "\""
+		  << " y1=\"" << 10 + n.y*30  << "\""
+		  << " x2=\"" << 10 + n.connections[i]->getX()*30  << "\""
+		  << " y2=\"" << 10 + n.connections[i]->getY()*30 << "\""
 		  << " stroke-width=\"2\" stroke=\"#000000\"/>";
 	    }
 	  //out << "\tNode: (" << n.connections[i]->getX() << "," << n.connections[i]->getY() << ")" << endl;
@@ -96,17 +96,17 @@ Node::Node( int a, int b )
 bool Node::removeConnection(Node * n)
 {
 #ifdef DEBUG
-  cerr << "trying to remove connection " << endl;
+  cerr << "trying to remove connection: " << n->getX() << "," << n->getY() << endl << "from " << getX() << "," << getY() << endl;
 #endif
   // Make sure we're not trying to remove a connection to ourself
-  if( n->getX() == x && n->getY() == y ) return false;
+  if( (n->getX() == x && n->getY() == y) || ( !n->isConnected() )) return false;
 
   for( int i=0; i<connections.size(); i++ )
     {
       if( connections.at(i) == n )
 	{
-	  // found it in the connections list already
-	  connections.erase(connections.begin()+i-1);
+
+	  connections.erase(connections.begin()+i);
 	  n->removeConnection(this);
 	  return true;
 	  // no need to keep looking so
@@ -255,6 +255,8 @@ int main()
   srand (time(NULL));
 
   cout << "<html><svg width=\"1080px\" height=\"1080px\" version=\"1.1\"><defs></defs>" << endl;
+  cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
+  cout << "<text x=\"" << (MAXSIZE-1.5)*30+10 << "\" y=\""  << (MAXSIZE-1)*30 << "\">End</text>" << endl;
 
   Field * f = new Field( MAXSIZE, MAXSIZE );
 
@@ -309,7 +311,9 @@ int main()
   f->getNode(0,1)->removeConnection( f->getNode(0,0) );
 
   // bottom right
+  
   f->getNode(MAXSIZE-1,MAXSIZE-2)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-1) );
+  
   f->getNode(MAXSIZE-1,MAXSIZE-1)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-2) );
 
   // addRandomWall( f->getNode(5,4), f );
