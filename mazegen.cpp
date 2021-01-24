@@ -309,11 +309,12 @@ int main()
 
 #ifdef DEBUG
   cout << endl << endl << "<!-- Initial Walls -->" << endl;
-
 #endif
   int random_part_of_a_wall;
   bool supress=false;
-  for( int i=0; i< 10; i++ )
+
+  int number_of_side_walls = MAXSIZE/4;
+  for( int i=0; i< number_of_side_walls; i++ )
     {
 
       random_part_of_a_wall = rand() % MAXSIZE;
