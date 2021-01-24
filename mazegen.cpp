@@ -21,9 +21,9 @@ public:
   void setY( int a ){ y = a; };
   int getX(){ return x; };
   int getY(){ return y; };
-
+  bool isValid(){ return validity; };
   void setWall();
-  
+  int number_of_connections();
   bool isConnected();
   bool addConnection( Node * n );
   bool removeConnection( Node * n );
@@ -33,7 +33,14 @@ private:
   int x;
   int y;
   bool wall;
+  bool validity;
 };
+
+int Node::number_of_connections()
+{
+  return connections.size();
+}
+
 void Node::setWall()
 {
   wall=true;
@@ -70,34 +77,43 @@ bool Node::isConnected()
 
 Node::Node()
 {
-#ifdef DEBUG
-  cerr << "creating node" << endl;
+#ifdef DEBUG2
+  cout << "<!-- creating empty node -->" << endl;
 #endif
   wall=false;
+  validity=false;
 }
 
 Node::~Node()
 {
-#ifdef DEBUG
-  cerr << "deleting node" << endl;
+#ifdef DEBUG2
+  cout << "<!-- deleting node: (" << getX() << "," << getY() << ") -->" << endl;
 #endif
 }
 
-
-Node::Node( int a, int b )
-{
-#ifdef DEBUG
-  cerr << "creating node: (" << a << "," << b << ")" << endl;
+  
+  Node::Node( int a, int b )
+  {
+#ifdef DEBUG2
+    cout << "<!-- creating node: (" << a << "," << b << ") -->" << endl;
 #endif
-  x=a;
-  y=b;
-  wall=false;
-}
+    x=a;
+    y=b;
+    wall=false;
+    if( a==-1 || b==-1 )
+      {
+	validity=false;
+      }
+    else
+      {
+	validity=true;
+      }
+  }
 
 bool Node::removeConnection(Node * n)
 {
-#ifdef DEBUG
-  cerr << "trying to remove connection: " << n->getX() << "," << n->getY() << endl << "from " << getX() << "," << getY() << endl;
+#ifdef DEBUG2
+  cout << "<!-- trying to remove connection: (" << n->getX() << "," << n->getY() << ") from (" << getX() << "," << getY() << ") -->" << endl;
 #endif
   // Make sure we're not trying to remove a connection to ourself
   if( (n->getX() == x && n->getY() == y) || ( !n->isConnected() )) return false;
@@ -120,10 +136,17 @@ bool Node::removeConnection(Node * n)
 }
 bool Node::addConnection( Node * n )
 {
-#ifdef DEBUG
-  cerr << "trying to add connection " << endl;
+#ifdef DEBUG2
+  cout << "<!-- trying to add connection to (" << getX() << "," << getY() << ") -->" << endl;
 #endif
 
+  if( !n->isValid() )
+    {
+#ifdef DEBUG
+      cout << "<!-- * * * INVALID NODE * * * -->" << endl << endl;
+#endif
+      return false;
+    }
   // Make sure we're not trying to create a connection to self
   if( n->getX() == x && n->getY() == y ) return false;
   
@@ -147,7 +170,7 @@ bool Node::addConnection( Node * n )
   if( found )
     {
 #ifdef DEBUG
-      cerr << " * * * f a i l e d : already found in connections list" << endl;
+      cout << "<!-- * * * f a i l e d : already found in connections list -->" << endl;
 #endif
       return( false );
     }
@@ -165,8 +188,8 @@ class Field
 public:
   Field()
   {
-#ifdef DEBUG    
-    cerr << "creating field" << endl;
+#ifdef DEBUG2    
+    cout << "<!-- creating field -->" << endl;
 #endif
   };
   ~Field();
@@ -187,16 +210,16 @@ private:
 Node * Field::getNode(int i, int j)
 {
   if( i < 0 || j < 0 || i > x || j > y ) return new Node(-1,-1);
-#ifdef DEBUG
-  cerr << "field::getNode(" << i << "," << j << ")" << endl;
+#ifdef DEBUG2
+  cout << "<!-- field::getNode(" << i << "," << j << ") -->" << endl;
 #endif  
   return nodes[i][j];
 }
 
 Field::~Field()
 {
-#ifdef DEBUG
-  cerr << "deleting field" << endl;
+#ifdef DEBUG2
+  cout << "<!-- deleting field -->" << endl;
 #endif
 
 }
@@ -204,8 +227,8 @@ Field::~Field()
 
 Field::Field(int a, int b)
 {
-#ifdef DEBUG
-  cerr << "creating field of size: " << a << " x " << b << endl;
+#ifdef DEBUG2
+  cout << "<!-- creating field of size: " << a << " x " << b << "-->" << endl;
 #endif
   x=a;
   y=b;
@@ -224,7 +247,7 @@ Field::Field(int a, int b)
 bool addRandomWall( Node * starting_node, Field * f)
 {
 #ifdef DEBUG
-  cerr << "addRandomWall()" << endl;
+  cout << "<!-- addRandomWall() starting with: (" << starting_node->getX() << "," << starting_node->getY() << ") -->" << endl;
 #endif
   int my_x = starting_node->getX();
   int my_y = starting_node->getY();
@@ -232,21 +255,24 @@ bool addRandomWall( Node * starting_node, Field * f)
   if( my_x==-1 || my_y == -1 || my_x > MAXSIZE-2 || my_y > MAXSIZE-2) return false;
   vector <Node*> possibleNodes;
   
-  if( !f->getNode( my_x, my_y+1 )->isConnected()) possibleNodes.push_back( f->getNode( my_x, my_y+1 ) );
-  if( !f->getNode( my_x, my_y-1 )->isConnected()) possibleNodes.push_back( f->getNode( my_x, my_y-1 ) );
-  if( !f->getNode( my_x+1, my_y )->isConnected()) possibleNodes.push_back( f->getNode( my_x+1, my_y ) );
-  if( !f->getNode( my_x-1, my_y )->isConnected()) possibleNodes.push_back( f->getNode( my_x-1, my_y ) );
+  if( !f->getNode( my_x, my_y+1 )->isConnected() && f->getNode( my_x, my_y+1 )->isValid() ) possibleNodes.push_back( f->getNode( my_x, my_y+1 ) );
+  if( !f->getNode( my_x, my_y-1 )->isConnected() && f->getNode( my_x, my_y-1 )->isValid() ) possibleNodes.push_back( f->getNode( my_x, my_y-1 ) );
+  if( !f->getNode( my_x+1, my_y )->isConnected() && f->getNode( my_x+1, my_y )->isValid() ) possibleNodes.push_back( f->getNode( my_x+1, my_y ) );
+  if( !f->getNode( my_x-1, my_y )->isConnected() && f->getNode( my_x-1, my_y )->isValid() ) possibleNodes.push_back( f->getNode( my_x-1, my_y ) );
 
   if( possibleNodes.size() == 0 ) return false;
 
   int NSEW = rand() % possibleNodes.size();
 #ifdef DEBUG
-  cerr << "(" << my_x << "," << my_y << ") Choosing: (" << possibleNodes[NSEW]->getX() << "," << possibleNodes[NSEW]->getY() << ")" << endl;
+  cout << "<!--        (" << my_x << "," << my_y << ") Choosing: (" << possibleNodes[NSEW]->getX() << "," << possibleNodes[NSEW]->getY() << ") -->" << endl;
 #endif
+  // if possibleNodes[NESW] is already connected, don't do it and return false
+  if( possibleNodes[NSEW]->isConnected() ) return false;
+  
   starting_node->addConnection( possibleNodes[NSEW] );
   addRandomWall( possibleNodes[NSEW], f );
 #ifdef DEBUG
-  cerr << "Done adding Random Wall" << endl;
+  cout << "<!-- Done adding Random Wall -->" << endl;
 #endif
   //starting_node->addConnection( possibleNodes[NSEW] );
   
@@ -266,6 +292,9 @@ int main()
 
   Field * f = new Field( MAXSIZE, MAXSIZE );
 
+
+  // This creates the border
+  
   for( int i=0; i<MAXSIZE-1; i++ )
     {
       
@@ -276,42 +305,83 @@ int main()
       
     }
 
-  int random_part_of_a_wall;
 
-  for( int i=0; i< 1; i++ )
+
+#ifdef DEBUG
+  cout << endl << endl << "<!-- Initial Walls -->" << endl;
+
+#endif
+  int random_part_of_a_wall;
+  bool supress=false;
+  for( int i=0; i< 10; i++ )
     {
       //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-      random_part_of_a_wall = (rand() % (MAXSIZE));
-      // North Border
-      f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
-      addRandomWall( f->getNode(random_part_of_a_wall,1), f );
-  
-      // West Border
-      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-      random_part_of_a_wall = (rand() % (MAXSIZE));
-      f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
-      addRandomWall( f->getNode(1,random_part_of_a_wall), f );
+      if( !supress && f->getNode(random_part_of_a_wall,1)->number_of_connections() <= 2 )
+	{
+	  random_part_of_a_wall = (rand() % (MAXSIZE));
+	  // North Border
+	  //f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
+	  //addRandomWall( f->getNode(random_part_of_a_wall,1), f );
+	  //f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
+	  addRandomWall( f->getNode(random_part_of_a_wall,0), f );
+#ifdef DEBUG
+	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << 30 << "\">*</text>" << endl;
+#endif
+	}
+
       
+
+      if( !supress && f->getNode(1,random_part_of_a_wall)->number_of_connections() <= 2 )
+	{
+	  // West Border
+	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+	  random_part_of_a_wall = (rand() % (MAXSIZE));
+	  //f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
+	  //addRandomWall( f->getNode(1,random_part_of_a_wall), f );
+	  //f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
+	  addRandomWall( f->getNode(0,random_part_of_a_wall), f );
+#ifdef DEBUG
+	  cout << "<text x=\"" << 10 << "\" y=\""  << (random_part_of_a_wall)*30+10 << "\">*</text>" << endl;
+#endif
+	}
       
-      // South Border
-      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-      random_part_of_a_wall = (rand() % (MAXSIZE));
-      f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
-      addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
+
+      if( !supress && f->getNode(random_part_of_a_wall,MAXSIZE-1)->number_of_connections() <= 2 )
+	{
+	  
+	  // South Border
+	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+	  random_part_of_a_wall = (rand() % (MAXSIZE));
+	  //f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
+	  //addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
+	  //f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
+	  addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-1), f );
+#ifdef DEBUG
+     	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << MAXSIZE*30+10 << "\">*</text>" << endl;
+#endif	  
+	}
       
-      // East Border
-      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-      random_part_of_a_wall = (rand() % (MAXSIZE));
-      f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
-      addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
-    }				 
+      if( !supress && f->getNode(MAXSIZE-1,random_part_of_a_wall)->number_of_connections() <= 2 )
+	{
+	  // East Border
+	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+	  random_part_of_a_wall = (rand() % (MAXSIZE));
+	  //f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
+	  //addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
+	  //f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
+	  addRandomWall( f->getNode(MAXSIZE-1,random_part_of_a_wall), f );
+#ifdef DEBUG
+	  cout << "<text x=\"" << (MAXSIZE-1)*30 << "\" y=\""  << (random_part_of_a_wall)*30+10 << "\">*</text>" << endl;
+#endif
+	}
+    }
  
 
   for( int i=0; i<MAXSIZE; i++ )
     {
       for( int j=0; j<MAXSIZE; j++ )
 	{
-	  addRandomWall( f->getNode(i,j), f );
+	  if( !supress ) addRandomWall( f->getNode(i,j), f );
 	}
     }
 
