@@ -1,4 +1,4 @@
-#define MAXSIZE 36
+//#define MAXSIZE 16
 
 #include <iostream>
 #include <vector>
@@ -6,6 +6,7 @@
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
+int MAXSIZE;
 
 bool isstart;
 using namespace std;
@@ -68,30 +69,30 @@ bool Node::isConnected()
 }
 
 Node::Node()
-  {
+{
 #ifdef DEBUG
-    cerr << "creating node" << endl;
+  cerr << "creating node" << endl;
 #endif
-    wall=false;
-  }
+  wall=false;
+}
 
 Node::~Node()
-  {
+{
 #ifdef DEBUG
-    cerr << "deleting node" << endl;
+  cerr << "deleting node" << endl;
 #endif
-  }
+}
 
 
 Node::Node( int a, int b )
-  {
+{
 #ifdef DEBUG
-    cerr << "creating node: (" << a << "," << b << ")" << endl;
+  cerr << "creating node: (" << a << "," << b << ")" << endl;
 #endif
-    x=a;
-    y=b;
-    wall=false;
-  }
+  x=a;
+  y=b;
+  wall=false;
+}
 
 bool Node::removeConnection(Node * n)
 {
@@ -125,6 +126,7 @@ bool Node::addConnection( Node * n )
 
   // Make sure we're not trying to create a connection to self
   if( n->getX() == x && n->getY() == y ) return false;
+  
   // create a connection from this Node to another
   // first, look through the connections, and make sure
   // n is not already in it.
@@ -221,8 +223,9 @@ Field::Field(int a, int b)
 
 bool addRandomWall( Node * starting_node, Field * f)
 {
+#ifdef DEBUG
   cerr << "addRandomWall()" << endl;
-  
+#endif
   int my_x = starting_node->getX();
   int my_y = starting_node->getY();
   
@@ -237,13 +240,14 @@ bool addRandomWall( Node * starting_node, Field * f)
   if( possibleNodes.size() == 0 ) return false;
 
   int NSEW = rand() % possibleNodes.size();
-
+#ifdef DEBUG
   cerr << "(" << my_x << "," << my_y << ") Choosing: (" << possibleNodes[NSEW]->getX() << "," << possibleNodes[NSEW]->getY() << ")" << endl;
+#endif
   starting_node->addConnection( possibleNodes[NSEW] );
   addRandomWall( possibleNodes[NSEW], f );
-
+#ifdef DEBUG
   cerr << "Done adding Random Wall" << endl;
-
+#endif
   //starting_node->addConnection( possibleNodes[NSEW] );
   
   return true;
@@ -251,10 +255,12 @@ bool addRandomWall( Node * starting_node, Field * f)
 }
 int main()
 {
+  cerr << "size? ";
+  scanf( "%d", &MAXSIZE );
   isstart=true;
   srand (time(NULL));
 
-  cout << "<html><svg width=\"1080px\" height=\"1080px\" version=\"1.1\"><defs></defs>" << endl;
+  cout << "<html><svg width=\"" << MAXSIZE*30+10<< "px\" height=\"" << MAXSIZE*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
   cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
   cout << "<text x=\"" << (MAXSIZE-1.5)*30+10 << "\" y=\""  << (MAXSIZE-1)*30 << "\">End</text>" << endl;
 
@@ -270,29 +276,35 @@ int main()
       
     }
 
-  int random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-  // North Border
-  f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
-  addRandomWall( f->getNode(random_part_of_a_wall,1), f );
+  int random_part_of_a_wall;
 
+  for( int i=0; i< 1; i++ )
+    {
+      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+      random_part_of_a_wall = (rand() % (MAXSIZE));
+      // North Border
+      f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
+      addRandomWall( f->getNode(random_part_of_a_wall,1), f );
   
-  // West Border
-  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-  f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
-  addRandomWall( f->getNode(1,random_part_of_a_wall), f );
-
-  // TODO: Why do the Southern and Eastern Borders sometimes connect creating a non-maze?
-
-  // South Border
-  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-  f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
-  addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
-
-  // East Border
-  random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-  f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
-  addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
-  
+      // West Border
+      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+      random_part_of_a_wall = (rand() % (MAXSIZE));
+      f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
+      addRandomWall( f->getNode(1,random_part_of_a_wall), f );
+      
+      
+      // South Border
+      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+      random_part_of_a_wall = (rand() % (MAXSIZE));
+      f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
+      addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
+      
+      // East Border
+      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
+      random_part_of_a_wall = (rand() % (MAXSIZE));
+      f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
+      addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
+    }				 
  
 
   for( int i=0; i<MAXSIZE; i++ )
