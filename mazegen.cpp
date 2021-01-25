@@ -6,9 +6,11 @@
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
-int MAXSIZE;
+//int MAXSIZE;
 
-bool isstart;
+int HEIGHT;
+int WIDTH;
+bool signature=false;
 using namespace std;
 
 class Node
@@ -22,7 +24,6 @@ public:
   int getX(){ return x; };
   int getY(){ return y; };
   bool isValid(){ return validity; };
-  void setWall();
   int number_of_connections();
   bool isConnected();
   bool addConnection( Node * n );
@@ -32,7 +33,6 @@ private:
   vector<Node*> connections;
   int x;
   int y;
-  bool wall;
   bool validity;
 };
 
@@ -41,10 +41,6 @@ int Node::number_of_connections()
   return connections.size();
 }
 
-void Node::setWall()
-{
-  wall=true;
-}
 ostream & operator << (ostream &out, const Node &n) 
 {
   //out << "Node: (" << n.x << "," << n.y << ")";
@@ -80,7 +76,6 @@ Node::Node()
 #ifdef DEBUG2
   cout << "<!-- creating empty node -->" << endl;
 #endif
-  wall=false;
   validity=false;
 }
 
@@ -99,7 +94,6 @@ Node::~Node()
 #endif
     x=a;
     y=b;
-    wall=false;
     if( a==-1 || b==-1 )
       {
 	validity=false;
@@ -252,7 +246,7 @@ bool addRandomWall( Node * starting_node, Field * f)
   int my_x = starting_node->getX();
   int my_y = starting_node->getY();
   
-  if( my_x==-1 || my_y == -1 || my_x > MAXSIZE-2 || my_y > MAXSIZE-2) return false;
+  if( my_x==-1 || my_y == -1 || my_x > WIDTH-2 || my_y > HEIGHT-2) return false;
   vector <Node*> possibleNodes;
   
   if( !f->getNode( my_x, my_y+1 )->isConnected() && f->getNode( my_x, my_y+1 )->isValid() ) possibleNodes.push_back( f->getNode( my_x, my_y+1 ) );
@@ -281,29 +275,60 @@ bool addRandomWall( Node * starting_node, Field * f)
 }
 int main()
 {
-  cerr << "size? ";
-  scanf( "%d", &MAXSIZE );
-  isstart=true;
+  cerr << "height? ";
+  scanf( "%d", &HEIGHT );
+
+  cerr << "width? ";
+  scanf( "%d", &WIDTH );
+  
+  //  cerr << "size? ";
+  //scanf( "%d", &MAXSIZE );
   srand (time(NULL));
 
-  cout << "<html><svg width=\"" << MAXSIZE*30+10<< "px\" height=\"" << MAXSIZE*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
+  cout << "<html><svg width=\"" << WIDTH*30+10<< "px\" height=\"" << HEIGHT*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
   cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
-  cout << "<text x=\"" << (MAXSIZE-1.5)*30+10 << "\" y=\""  << (MAXSIZE-1)*30 << "\">End</text>" << endl;
+  cout << "<text x=\"" << (WIDTH-1.5)*30+10 << "\" y=\""  << (HEIGHT-1)*30 << "\">End</text>" << endl;
 
-  Field * f = new Field( MAXSIZE, MAXSIZE );
+  Field * f = new Field( WIDTH, HEIGHT );
 
 
   // This creates the border
   
-  for( int i=0; i<MAXSIZE-1; i++ )
+  for( int i=0; i<WIDTH-1; i++ )
     {
-      
-      f->getNode(0,i)->addConnection( f->getNode(0,i+1) ); 
-      f->getNode(MAXSIZE-1,i)->addConnection( f->getNode(MAXSIZE-1,i+1) );
       f->getNode(i,0)->addConnection( f->getNode(i+1,0) );
-      f->getNode(i,MAXSIZE-1)->addConnection( f->getNode(i+1,MAXSIZE-1) );
-      
+      f->getNode(i,HEIGHT-1)->addConnection( f->getNode(i+1,HEIGHT-1) ); 
     }
+  for( int i=0; i<HEIGHT-1; i++ )
+    {
+      f->getNode(0,i)->addConnection( f->getNode(0,i+1) ); 
+      f->getNode(WIDTH-1,i)->addConnection( f->getNode(WIDTH-1,i+1) );
+    }
+
+
+  // create signature
+  if( (HEIGHT > 10) && (WIDTH>15) && signature )
+  {
+    f->getNode(7,8)->addConnection( f->getNode(7,7) );
+    f->getNode(7,7)->addConnection( f->getNode(7,6) );
+    f->getNode(7,6)->addConnection( f->getNode(8,6) );
+    f->getNode(8,6)->addConnection( f->getNode(8,7) );
+    f->getNode(8,6)->addConnection( f->getNode(9,6) );
+    f->getNode(9,6)->addConnection( f->getNode(9,7) );
+    f->getNode(9,7)->addConnection( f->getNode(9,8) );
+    f->getNode(9,8)->addConnection( f->getNode(9,9) );
+    f->getNode(10,8)->addConnection( f->getNode(10,7) );
+    f->getNode(10,7)->addConnection( f->getNode(10,6) );
+    f->getNode(10,6)->addConnection( f->getNode(11,6) );
+    f->getNode(11,6)->addConnection( f->getNode(11,7) );
+    f->getNode(11,7)->addConnection( f->getNode(10,7) );
+    //f->getNode(,)->addConnection( f->getNode(,) );
+    //f->getNode(,)->addConnection( f->getNode(,) );
+    //f->getNode(,)->addConnection( f->getNode(,) );
+    //f->getNode(,)->addConnection( f->getNode(,) );
+    //f->getNode(,)->addConnection( f->getNode(,) );
+
+  }
 
 
 
@@ -313,82 +338,67 @@ int main()
   int random_part_of_a_wall;
   bool supress=false;
 
-  int number_of_side_walls = MAXSIZE/4;
+  int number_of_side_walls = HEIGHT/4;
+  int number_of_top_walls = WIDTH/4;
   for( int i=0; i< number_of_side_walls; i++ )
     {
-
-      random_part_of_a_wall = rand() % MAXSIZE;
-
-      //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-      if( !supress && f->getNode(random_part_of_a_wall,1)->number_of_connections() <= 2 )
-	{
-	  // North Border
-	  //f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
-	  //addRandomWall( f->getNode(random_part_of_a_wall,1), f );
-	  //f->getNode(random_part_of_a_wall,1)->addConnection( f->getNode(random_part_of_a_wall,0) );
-	  addRandomWall( f->getNode(random_part_of_a_wall,0), f );
-#ifdef DEBUG
-	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << 30 << "\">*</text>" << endl;
-#endif
-	}
-
-      random_part_of_a_wall = rand() % MAXSIZE;
-
+      // Western Border
+      random_part_of_a_wall = rand() % HEIGHT;
       if( !supress && f->getNode(1,random_part_of_a_wall)->number_of_connections() <= 2 )
 	{
-	  // West Border
-	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-	  //f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
-	  //addRandomWall( f->getNode(1,random_part_of_a_wall), f );
-	  //f->getNode(1,random_part_of_a_wall)->addConnection( f->getNode(0,random_part_of_a_wall) );
 	  addRandomWall( f->getNode(0,random_part_of_a_wall), f );
 #ifdef DEBUG
 	  cout << "<text x=\"" << 10 << "\" y=\""  << (random_part_of_a_wall)*30+10 << "\">*</text>" << endl;
 #endif
 	}
-      
-      random_part_of_a_wall = rand() % MAXSIZE;
 
-      if ( (!supress) &&
-	   (f->getNode(random_part_of_a_wall,MAXSIZE-1)->number_of_connections() <= 2) &&
-	   (f->getNode(random_part_of_a_wall,MAXSIZE-2)->number_of_connections() == 0) 
-	   )
-	{
-	  
-	  // South Border
-	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-	  //f->getNode(random_part_of_a_wall,MAXSIZE-2)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-1) );
-	  //addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
-	  
-	  f->getNode(random_part_of_a_wall,MAXSIZE-1)->addConnection( f->getNode(random_part_of_a_wall,MAXSIZE-2) );
-	  addRandomWall( f->getNode(random_part_of_a_wall,MAXSIZE-2), f );
-#ifdef DEBUG
-     	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << MAXSIZE*30+10 << "\">*</text>" << endl;
-#endif	  
-	}
-      random_part_of_a_wall = rand() % MAXSIZE;
-      
+      // Eastern Border
+      random_part_of_a_wall = rand() % HEIGHT;
       if( (!supress) &&
-	  (f->getNode(MAXSIZE-1,random_part_of_a_wall)->number_of_connections() <= 2) &&
-	  (f->getNode(MAXSIZE-2,random_part_of_a_wall)->number_of_connections() == 0) 
+	  (f->getNode(WIDTH-1,random_part_of_a_wall)->number_of_connections() <= 2) &&
+	  (f->getNode(WIDTH-2,random_part_of_a_wall)->number_of_connections() == 0) 
 	  )
 	{
-	  // East Border
-	  //random_part_of_a_wall = (rand() % (MAXSIZE/4))+MAXSIZE/2 ;
-	  //f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
-	  //addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
-	  f->getNode(MAXSIZE-2,random_part_of_a_wall)->addConnection( f->getNode(MAXSIZE-1,random_part_of_a_wall) );
-	  addRandomWall( f->getNode(MAXSIZE-2,random_part_of_a_wall), f );
+	  f->getNode(WIDTH-2,random_part_of_a_wall)->addConnection( f->getNode(WIDTH-1,random_part_of_a_wall) );
+	  addRandomWall( f->getNode(WIDTH-2,random_part_of_a_wall), f );
 #ifdef DEBUG
-	  cout << "<text x=\"" << (MAXSIZE-1)*30 << "\" y=\""  << (random_part_of_a_wall)*30+10 << "\">*</text>" << endl;
+	  cout << "<text x=\"" << (WIDTH-1)*30 << "\" y=\""  << (random_part_of_a_wall)*30+10 << "\">*</text>" << endl;
 #endif
 	}
     }
+
+  for( int i=0; i< number_of_top_walls; i++ )
+    {
+      // Northern Border
+      random_part_of_a_wall = rand() % WIDTH;
+      if( !supress && f->getNode(random_part_of_a_wall,1)->number_of_connections() <= 2 )
+	{
+	  addRandomWall( f->getNode(random_part_of_a_wall,0), f );
+#ifdef DEBUG
+	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << 30 << "\">*</text>" << endl;
+#endif
+	}
+      random_part_of_a_wall = rand() % WIDTH;
+      if ( (!supress) &&
+	   (f->getNode(random_part_of_a_wall,HEIGHT-1)->number_of_connections() <= 2) &&
+	   (f->getNode(random_part_of_a_wall,HEIGHT-2)->number_of_connections() == 0) 
+	   )
+	{
+	  f->getNode(random_part_of_a_wall,HEIGHT-1)->addConnection( f->getNode(random_part_of_a_wall,HEIGHT-2) );
+	  addRandomWall( f->getNode(random_part_of_a_wall,HEIGHT-2), f );
+#ifdef DEBUG
+     	  cout << "<text x=\"" << (random_part_of_a_wall)*30+10 << "\" y=\""  << HEIGHT*30+10 << "\">*</text>" << endl;
+#endif	  
+	}
+
+
+    }
+  // *****
  
 
-  for( int i=0; i<MAXSIZE; i++ )
+  for( int i=0; i<WIDTH; i++ )
     {
-      for( int j=0; j<MAXSIZE; j++ )
+      for( int j=0; j<HEIGHT; j++ )
 	{
 	  if( !supress ) addRandomWall( f->getNode(i,j), f );
 	}
@@ -403,16 +413,16 @@ int main()
 
   // bottom right
   
-  f->getNode(MAXSIZE-1,MAXSIZE-2)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-1) );
+  f->getNode(WIDTH-1,HEIGHT-2)->removeConnection( f->getNode(WIDTH-1,HEIGHT-1) );
   
-  f->getNode(MAXSIZE-1,MAXSIZE-1)->removeConnection( f->getNode(MAXSIZE-1,MAXSIZE-2) );
+  f->getNode(WIDTH-1,HEIGHT-1)->removeConnection( f->getNode(WIDTH-1,HEIGHT-2) );
 
   // addRandomWall( f->getNode(5,4), f );
 
   /* DISPLAY THE MAZE */
-  for( int i=0; i<MAXSIZE; i++ )
+  for( int i=0; i<WIDTH; i++ )
     {
-      for( int j=0; j<MAXSIZE; j++ )
+      for( int j=0; j<HEIGHT; j++ )
 	{
 	  cout << *f->getNode(i,j) << endl;
 	}
@@ -423,5 +433,3 @@ int main()
   delete f;
   return 0;
 }
-
-
