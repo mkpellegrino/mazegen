@@ -1,16 +1,14 @@
-//#define MAXSIZE 16
-
 #include <iostream>
 #include <vector>
 
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
-//int MAXSIZE;
 
 int HEIGHT;
 int WIDTH;
 bool signature=false;
+bool latex=true;
 using namespace std;
 
 class Node
@@ -43,24 +41,29 @@ int Node::number_of_connections()
 
 ostream & operator << (ostream &out, const Node &n) 
 {
-  //out << "Node: (" << n.x << "," << n.y << ")";
   if( n.connections.size() > 0 && (n.x>=0) && (n.y>=0) )
     {
-      //out << "->" << endl;
       for( int i=0; i<n.connections.size(); i++ )
 	{
 	  // this would create an infinite recursive loop
-	  //out << "\t" << *n.connections[i] << endl;
 	  if( (n.connections[i]->getX()>=0) && (n.connections[i]->getY() >=0 ) )
 	    {
+	      if( latex )
+		{
+		  out << "\\draw[thick,-] ("
+		      << 5 + n.x  << "," << -1*(5 + n.y)  << ") -- ("
+		      << 5 + n.connections[i]->getX() << "," << -1*(5 + n.connections[i]->getY()) << ");";
+		}
+	      else
+		{
 	      out << "<line"
 		  << " x1=\"" << 10 + n.x*30  << "\""
 		  << " y1=\"" << 10 + n.y*30  << "\""
 		  << " x2=\"" << 10 + n.connections[i]->getX()*30  << "\""
-		  << " y2=\"" << 10 + n.connections[i]->getY()*30 << "\""
+		  << " y2=\"" << 10 + n.connections[i]->getY()*30  << "\""
 		  << " stroke-width=\"2\" stroke=\"#000000\"/>";
+		}
 	    }
-	  //out << "\tNode: (" << n.connections[i]->getX() << "," << n.connections[i]->getY() << ")" << endl;
 	}
     }
   return out;
@@ -275,20 +278,36 @@ bool addRandomWall( Node * starting_node, Field * f)
 }
 int main()
 {
+  cerr << "1) LaTeX   2) svg/html : ";
+  scanf( "%d", &HEIGHT );
+  if( HEIGHT==2 )
+    latex=false;
+
   cerr << "height? ";
   scanf( "%d", &HEIGHT );
 
   cerr << "width? ";
   scanf( "%d", &WIDTH );
+
   
-  //  cerr << "size? ";
-  //scanf( "%d", &MAXSIZE );
   srand (time(NULL));
 
-  cout << "<html><svg width=\"" << WIDTH*30+10<< "px\" height=\"" << HEIGHT*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
-  cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
-  cout << "<text x=\"" << (WIDTH-1.5)*30+10 << "\" y=\""  << (HEIGHT-1)*30 << "\">End</text>" << endl;
+  if( latex )
+    {
+      cout << "\\documentclass{beamer}" << endl
+	   << "\\usepackage{tikz}" << endl
+	   << "\\begin{document}" << endl
+	   << "\\frame{" << endl;
+      //cout << "\\begin{tikzpicture}[xscale=0.25,yscale=0.25]" << endl;
+      cout << "\\begin{tikzpicture}[xscale=0.1,yscale=0.1]" << endl;
 
+    }
+  else
+    {
+      cout << "<html><svg width=\"" << WIDTH*30+10<< "px\" height=\"" << HEIGHT*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
+      cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
+      cout << "<text x=\"" << (WIDTH-1.5)*30+10 << "\" y=\""  << (HEIGHT-1)*30 << "\">End</text>" << endl;
+    }
   Field * f = new Field( WIDTH, HEIGHT );
 
 
@@ -338,8 +357,8 @@ int main()
   int random_part_of_a_wall;
   bool supress=false;
 
-  int number_of_side_walls = HEIGHT/4;
-  int number_of_top_walls = WIDTH/4;
+  int number_of_side_walls = HEIGHT/2;
+  int number_of_top_walls = WIDTH/2;
   for( int i=0; i< number_of_side_walls; i++ )
     {
       // Western Border
@@ -394,8 +413,9 @@ int main()
 
     }
   // *****
- 
 
+
+  // fill empty spots with walls
   for( int i=0; i<WIDTH; i++ )
     {
       for( int j=0; j<HEIGHT; j++ )
@@ -417,8 +437,6 @@ int main()
   
   f->getNode(WIDTH-1,HEIGHT-1)->removeConnection( f->getNode(WIDTH-1,HEIGHT-2) );
 
-  // addRandomWall( f->getNode(5,4), f );
-
   /* DISPLAY THE MAZE */
   for( int i=0; i<WIDTH; i++ )
     {
@@ -428,8 +446,18 @@ int main()
 	}
 
     }
-
-  cout << "</svg></html>" << endl;
+  if( latex )
+    {
+      cout << "\\end{tikzpicture}" << endl;
+      cout << "}" << endl;
+      cout << "\\end{document}" << endl;
+    }
+  else
+    {
+      cout << "</svg></html>" << endl;
+    }
   delete f;
   return 0;
 }
+
+
