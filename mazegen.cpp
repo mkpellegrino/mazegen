@@ -281,11 +281,12 @@ bool addRandomWall( Node * starting_node, Field * f)
 }
 int main()
 {
-  cerr << "1) LaTeX   2) svg/html : ";
+  cerr << "1) LaTeX\t2) svg/html: ";
   scanf( "%d", &HEIGHT );
   if( HEIGHT==2 )
     latex=false;
 
+  cerr << "recommended maximum height and width is 122" << endl;
   cerr << "height? ";
   scanf( "%d", &HEIGHT );
 
@@ -305,6 +306,9 @@ int main()
 	   << "\\usepackage[letterpaper,total={7.5in,9.5in},top=0.75in]{geometry}" << endl 
 	   << "\\usepackage{tikz}" << endl
 	   << "\\begin{document}" << endl
+	   << "\\thispagestyle{empty}" << endl
+	   << "\\begin{center}" << endl
+
 	   << "\\begin{tikzpicture}[xscale=" << xscale << ",yscale=" << yscale << "]" << endl;
       
       
@@ -455,7 +459,12 @@ int main()
     }
   if( latex )
     {
+      // add entrance and exit
+      cout << "\\draw[thick,->] (5,-5.5) -- (5.25, -5.5);" << endl;
+      cout << "\\draw[thick,->] ("<< (double)WIDTH+3.75 << "," << (double)(-1*HEIGHT)-3.5 << ") -- (" << (double)WIDTH+4 << "," << (double)(-1*HEIGHT)-3.5 << ");" << endl;
       cout << "\\end{tikzpicture}" << endl;
+      cout << "\\par{} \\noindent \\tiny (C) 2021 - Michael K. Pellegrino - mkpelleg.freeshell.org" << endl;
+      cout << "\\end{center}" << endl;
       cout << "\\end{document}" << endl;
     }
   else
