@@ -1,3 +1,6 @@
+// (C) 2021 - Michael K. Pellegrino
+// A maze generator
+
 #include <iostream>
 #include <vector>
 
@@ -289,18 +292,22 @@ int main()
   cerr << "width? ";
   scanf( "%d", &WIDTH );
 
+  WIDTH++; // account for the missing column
+  HEIGHT++; // account for the missing row
   
   srand (time(NULL));
 
   if( latex )
     {
-      cout << "\\documentclass{beamer}" << endl
+      double xscale = (double)(int(100*7.5/(0.41*WIDTH)))/100;
+      double yscale = (double)(int(100*10/(0.41*HEIGHT)))/100;
+      cout << "\\documentclass[12pt]{article}" << endl
+	   << "\\usepackage[letterpaper,total={7.5in,9.5in},top=0.75in]{geometry}" << endl 
 	   << "\\usepackage{tikz}" << endl
 	   << "\\begin{document}" << endl
-	   << "\\frame{" << endl;
-      //cout << "\\begin{tikzpicture}[xscale=0.25,yscale=0.25]" << endl;
-      cout << "\\begin{tikzpicture}[xscale=0.1,yscale=0.1]" << endl;
-
+	   << "\\begin{tikzpicture}[xscale=" << xscale << ",yscale=" << yscale << "]" << endl;
+      
+      
     }
   else
     {
@@ -438,18 +445,17 @@ int main()
   f->getNode(WIDTH-1,HEIGHT-1)->removeConnection( f->getNode(WIDTH-1,HEIGHT-2) );
 
   /* DISPLAY THE MAZE */
+
   for( int i=0; i<WIDTH; i++ )
     {
       for( int j=0; j<HEIGHT; j++ )
 	{
 	  cout << *f->getNode(i,j) << endl;
 	}
-
     }
   if( latex )
     {
       cout << "\\end{tikzpicture}" << endl;
-      cout << "}" << endl;
       cout << "\\end{document}" << endl;
     }
   else
