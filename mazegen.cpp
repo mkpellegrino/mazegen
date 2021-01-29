@@ -12,6 +12,7 @@ int HEIGHT;
 int WIDTH;
 bool signature=false;
 bool latex=true;
+bool game=false;
 int uniqueid=0;
 using namespace std;
 
@@ -353,10 +354,15 @@ bool addRandomWall( Node * starting_node, Field * f)
 }
 int main()
 {
-  cerr << "1) LaTeX\t2) svg/html: ";
+  cerr << "1) LaTeX\t2) svg/html\t3) interactive svg/html:";
   scanf( "%d", &HEIGHT );
   if( HEIGHT==2 )
     latex=false;
+  if( HEIGHT==3 )
+    {
+      latex=false;
+      game=true;
+    }
 
   cerr << "recommended maximum height and width is 122" << endl;
   cerr << "height? ";
@@ -387,7 +393,20 @@ int main()
     }
   else
     {
-      cout << "<html><svg width=\"" << WIDTH*30+10<< "px\" height=\"" << HEIGHT*30+10 << "px\" version=\"1.1\"><defs></defs>" << endl;
+      cout << "<html>" << endl;
+      cout << "<head><title>A Maze Game - (C) 2021 - Michael K. Pellegrino</title>" << endl;
+      if( game )
+	{
+	  cout << "<script language=\"javascript\">var things=[];document.addEventListener('keydown', Kdown);function Kdown(e){var elm=document.getElementById(\"btn\");var x=elm.getAttribute('cx');var y=elm.getAttribute('cy');var K=e.keyCode;if(K==38){elm.setAttribute('cy',(1)*(y)-5);if(collision()==1)elm.setAttribute('cy',(1)*(y)+5);}else if(K==37){elm.setAttribute('cx',(1)*(x)-5);if(collision()==1)elm.setAttribute('cx',(1)*(x)+5);}else if(K==40){elm.setAttribute('cy',(1)*(y)+5);if(collision()==1)elm.setAttribute('cy',(1)*(y)-5);}else if(K==39){elm.setAttribute('cx',(1)*(x)+5);if(collision()==1)elm.setAttribute('cx',(1)*(x)-5);}if(winner()==1){alert(\"YOU'VE MADE IT!\");}}function onload(){var k=0;var elm;var duplicate=0;for(i=0; i<1920; i++){x=\"wall.\" + i;elm=document.getElementById(x);if(elm !=null)things[k++]=elm;}start_time=new Date();}function winner(){var s1=document.getElementById(\"btn\");var x=1*s1.getAttribute('cx');var y=1*s1.getAttribute('cy');if(x > 895 && y > 890)return 1;return 0;}function collision(){var s1=document.getElementById(\"btn\");s1x=1*s1.getAttribute('cx');s1y=1*s1.getAttribute('cy');var s2;for(i=0; i<things.length; i++){s2=things[i];var s2x1=1*s2.getAttribute('x1');var s2x2=1*s2.getAttribute('x2');var s2y1=1*s2.getAttribute('y1');var s2y2=1*s2.getAttribute('y2');var TLx;var TLy;var BRx;var BRy;if(s2x1==s2x2){TLx=1*s2x1-4;BRx=1*s2x2+4}else if(s2x1<s2x2){TLx=s2x1;BRx=s2x2;}else {TLx=s2x2;BRx=s2x1;}if(s2y1==s2y2){TLy=1*s2y1-4;BRy=1*s2y2+4;}else if(s2y1<s2y2){TLy=s2y1;BRy=s2y2;}else{TLy=s2y2;BRy=s2y1;}if((s1x <=BRx)&&(s1x >=TLx)&&(s1y <=BRy)&&(s1y >=TLy))return 1;}return 0;}</script></head><body obnload=\"onload();\"><center>" << endl;
+	}
+      else
+	{
+	  cout << "</head>" << endl;
+	}      
+
+      
+      cout << "<svg width=\"" << 500 << "px\" height=\"" << 500 << "px\" version=\"1.1\" viewBox=\"" << 0 << " " << 0 << " " << WIDTH*30+10 << " " << HEIGHT*30+10 << "\"><defs></defs>" << endl;
+      cout << "<circle id=\"btn\" r=\"5\" cx=\"25\" cy=\"25\" fill=\"red\"/>" << endl;
       cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
       cout << "<text x=\"" << (WIDTH-1.5)*30+10 << "\" y=\""  << (HEIGHT-1)*30 << "\">End</text>" << endl;
     }
@@ -518,14 +537,6 @@ int main()
   
   f->getNode(WIDTH-1,HEIGHT-2)->removeConnection( f->getNode(WIDTH-1,HEIGHT-1) );
   f->getNode(WIDTH-1,HEIGHT-1)->removeConnection( f->getNode(WIDTH-1,HEIGHT-2) );
-
-  /* remove duplicates */
-  for( int i=0; i<WIDTH; i++ )
-    {
-      for( int j=0; j<HEIGHT; j++ )
-	{
-	}
-    }
   
   
   /* DISPLAY THE MAZE */
