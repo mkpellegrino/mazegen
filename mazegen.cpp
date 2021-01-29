@@ -12,7 +12,57 @@ int HEIGHT;
 int WIDTH;
 bool signature=false;
 bool latex=true;
+int uniqueid=0;
 using namespace std;
+
+
+
+class LineValue
+{
+public:
+  LineValue();
+  ~LineValue();
+  LineValue( int a, int b, int c, int d );
+  bool same_as( int a, int b, int c, int d );
+private:
+  int A;
+  int B;
+  int C;
+  int D;
+};
+
+bool LineValue::same_as( int a, int b, int c, int d )
+{
+  if( A==a && B==b && C==c && D==d ) return true;
+  return false;
+}
+
+LineValue::LineValue( int a, int b, int c, int d )
+{
+  A=a;B=b;C=c;D=d;
+}
+
+
+vector<LineValue*> redundancy_list;
+
+// a global function to check to see if
+// a line segment has already been 'outed'
+bool isDuplicate(int a, int b, int c, int d )
+{
+  for( int i=0; i < redundancy_list.size(); i++ )
+    {
+      if( redundancy_list[i]->same_as( a, b, c, d ) )
+	{
+#ifdef DEBUG
+	  cerr << "found duplicate" << endl;
+#endif
+	  return true;
+	}
+    }
+  LineValue * tmp = new LineValue( a, b, c, d );
+  redundancy_list.push_back( tmp );
+  return false;
+}
 
 class Node
 {
@@ -51,20 +101,42 @@ ostream & operator << (ostream &out, const Node &n)
 	  // this would create an infinite recursive loop
 	  if( (n.connections[i]->getX()>=0) && (n.connections[i]->getY() >=0 ) )
 	    {
-	      if( latex )
+	      int A;
+	      int B;
+	      int C;
+	      int D;
+	      if( n.x <= n.connections[i]->getX() )
 		{
-		  out << "\\draw[thick,-] ("
-		      << 5 + n.x  << "," << -1*(5 + n.y)  << ") -- ("
-		      << 5 + n.connections[i]->getX() << "," << -1*(5 + n.connections[i]->getY()) << ");";
+		  A=n.x;
+		  B=n.y;
+		  C=n.connections[i]->getX();
+		  D=n.connections[i]->getY();
 		}
 	      else
 		{
-	      out << "<line"
-		  << " x1=\"" << 10 + n.x*30  << "\""
-		  << " y1=\"" << 10 + n.y*30  << "\""
-		  << " x2=\"" << 10 + n.connections[i]->getX()*30  << "\""
-		  << " y2=\"" << 10 + n.connections[i]->getY()*30  << "\""
-		  << " stroke-width=\"2\" stroke=\"#000000\"/>";
+		  A=n.connections[i]->getX();		      
+		  B=n.connections[i]->getY();		      
+		  C=n.x;
+		  D=n.y;
+		}
+
+	      if( latex )
+		{
+		  if( !isDuplicate( A, B, C, D ) )
+		  out << "\\draw[thick,-] ("
+		      << 5 + A  << "," << -1*(5 + B)  << ") -- ("
+		      << 5 + C  << "," << -1*(5 + D) << ");";
+		}
+	      else
+		{
+		  if( !isDuplicate( A, B, C, D ) )
+		    out << "<line"
+			<< " id=\"wall." << uniqueid++ << "\""
+			<< " x1=\"" << 10 + A*30  << "\""
+			<< " y1=\"" << 10 + B*30  << "\""
+			<< " x2=\"" << 10 + C*30  << "\""
+			<< " y2=\"" << 10 + D*30  << "\""
+			<< " stroke-width=\"2\" stroke=\"#000000\"/>";
 		}
 	    }
 	}
@@ -445,11 +517,19 @@ int main()
   // bottom right
   
   f->getNode(WIDTH-1,HEIGHT-2)->removeConnection( f->getNode(WIDTH-1,HEIGHT-1) );
-  
   f->getNode(WIDTH-1,HEIGHT-1)->removeConnection( f->getNode(WIDTH-1,HEIGHT-2) );
 
+  /* remove duplicates */
+  for( int i=0; i<WIDTH; i++ )
+    {
+      for( int j=0; j<HEIGHT; j++ )
+	{
+	}
+    }
+  
+  
   /* DISPLAY THE MAZE */
-
+  uniqueid=0;
   for( int i=0; i<WIDTH; i++ )
     {
       for( int j=0; j<HEIGHT; j++ )
