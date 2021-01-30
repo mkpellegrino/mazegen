@@ -397,14 +397,14 @@ int main()
       cout << "<head><title>A Maze Game - (C) 2021 - Michael K. Pellegrino</title>" << endl;
       if( game )
 	{
-	  cout << "<script language=\"javascript\">var things=[];document.addEventListener('keydown', Kdown);function Kdown(e){var elm=document.getElementById(\"btn\");var x=elm.getAttribute('cx');var y=elm.getAttribute('cy');var K=e.keyCode;if(K==38){elm.setAttribute('cy',(1)*(y)-5);if(collision()==1)elm.setAttribute('cy',(1)*(y)+5);}else if(K==37){elm.setAttribute('cx',(1)*(x)-5);if(collision()==1)elm.setAttribute('cx',(1)*(x)+5);}else if(K==40){elm.setAttribute('cy',(1)*(y)+5);if(collision()==1)elm.setAttribute('cy',(1)*(y)-5);}else if(K==39){elm.setAttribute('cx',(1)*(x)+5);if(collision()==1)elm.setAttribute('cx',(1)*(x)-5);}if(winner()==1){alert(\"YOU'VE MADE IT!\");}}function onload(){var k=0;var elm;var duplicate=0;for(i=0; i<1920; i++){x=\"wall.\" + i;elm=document.getElementById(x);if(elm !=null)things[k++]=elm;}start_time=new Date();}function winner(){var s1=document.getElementById(\"btn\");var x=1*s1.getAttribute('cx');var y=1*s1.getAttribute('cy');if(x > 895 && y > 890)return 1;return 0;}function collision(){var s1=document.getElementById(\"btn\");s1x=1*s1.getAttribute('cx');s1y=1*s1.getAttribute('cy');var s2;for(i=0; i<things.length; i++){s2=things[i];var s2x1=1*s2.getAttribute('x1');var s2x2=1*s2.getAttribute('x2');var s2y1=1*s2.getAttribute('y1');var s2y2=1*s2.getAttribute('y2');var TLx;var TLy;var BRx;var BRy;if(s2x1==s2x2){TLx=1*s2x1-4;BRx=1*s2x2+4}else if(s2x1<s2x2){TLx=s2x1;BRx=s2x2;}else {TLx=s2x2;BRx=s2x1;}if(s2y1==s2y2){TLy=1*s2y1-4;BRy=1*s2y2+4;}else if(s2y1<s2y2){TLy=s2y1;BRy=s2y2;}else{TLy=s2y2;BRy=s2y1;}if((s1x <=BRx)&&(s1x >=TLx)&&(s1y <=BRy)&&(s1y >=TLy))return 1;}return 0;}</script></head><body obnload=\"onload();\"><center>" << endl;
+	  cout << "<script language=\"javascript\">var things=[];document.addEventListener('keydown', Kdown);function Kdown(e){var elm=document.getElementById(\"btn\");var x=elm.getAttribute('cx');var y=elm.getAttribute('cy');var K=e.keyCode;if(K==38||K==73){elm.setAttribute('cy',(1)*(y)-5);if(collision()==1)elm.setAttribute('cy',(1)*(y)+5);}else if(K==37||K==74){elm.setAttribute('cx',(1)*(x)-5);if(collision()==1)elm.setAttribute('cx',(1)*(x)+5);}else if(K==40||K==75){elm.setAttribute('cy',(1)*(y)+5);if(collision()==1)elm.setAttribute('cy',(1)*(y)-5);}else if(K==39||K==76){elm.setAttribute('cx',(1)*(x)+5);if(collision()==1)elm.setAttribute('cx',(1)*(x)-5);}if(winner()==1){alert(\"YOU'VE MADE IT!\");}}function onload(){var k=0;var elm;var duplicate=0;for(i=0; i<1920; i++){x=\"wall.\" + i;elm=document.getElementById(x);if(elm !=null)things[k++]=elm;}start_time=new Date();}function winner(){var s1=document.getElementById(\"btn\");var x=1*s1.getAttribute('cx');var y=1*s1.getAttribute('cy');if(x > 895 && y > 890)return 1;return 0;}function collision(){var s1=document.getElementById(\"btn\");s1x=1*s1.getAttribute('cx');s1y=1*s1.getAttribute('cy');var s2;for(i=0; i<things.length; i++){s2=things[i];var s2x1=1*s2.getAttribute('x1');var s2x2=1*s2.getAttribute('x2');var s2y1=1*s2.getAttribute('y1');var s2y2=1*s2.getAttribute('y2');var TLx;var TLy;var BRx;var BRy;if(s2x1==s2x2){TLx=1*s2x1-4;BRx=1*s2x2+4}else if(s2x1<s2x2){TLx=s2x1;BRx=s2x2;}else {TLx=s2x2;BRx=s2x1;}if(s2y1==s2y2){TLy=1*s2y1-4;BRy=1*s2y2+4;}else if(s2y1<s2y2){TLy=s2y1;BRy=s2y2;}else{TLy=s2y2;BRy=s2y1;}if((s1x <=BRx)&&(s1x >=TLx)&&(s1y <=BRy)&&(s1y >=TLy))return 1;}return 0;}</script></head><body onload=\"onload();\"><center>" << endl;
 	}
       else
 	{
 	  cout << "</head>" << endl;
 	}      
 
-      
+      cout << "<center>A Maze Amusement - Use Arrow Keys or I (up), K (down), J (left), or L (right)<br>" << endl;
       cout << "<svg width=\"" << 500 << "px\" height=\"" << 500 << "px\" version=\"1.1\" viewBox=\"" << 0 << " " << 0 << " " << WIDTH*30+10 << " " << HEIGHT*30+10 << "\"><defs></defs>" << endl;
       cout << "<circle id=\"btn\" r=\"5\" cx=\"25\" cy=\"25\" fill=\"red\"/>" << endl;
       cout << "<text x=\"0\" y=\"30\">Start</text>" << endl;
@@ -560,7 +560,10 @@ int main()
     }
   else
     {
-      cout << "</svg></html>" << endl;
+      cout << "</svg>" << endl;
+      cout << "<p><font size=-2><i>(C) 2021 - Michael K. Pellegrino - <a target=_blank href=\"https://github.com/mkpellegrino/mazegen\">github.com/mkpellegrino/mazegen</a></i></font></p>" << endl;
+      cout << "<p><font size=-2><i>mazegen 1.0 - 2021 01 29</i></font></p>" << endl; 
+      cout << "</html>" << endl;
     }
   delete f;
   return 0;
